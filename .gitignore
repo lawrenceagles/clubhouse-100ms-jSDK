@@ -1,0 +1,18 @@
+# Dependency directories
+node_modules/
+
+# Optional npm cache directory
+.npm
+
+# dotenv environment variables file
+.env
+
+# Parcel related files
+dist/
+.parcel-cache/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+package-lock.json
