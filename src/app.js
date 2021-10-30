@@ -100,7 +100,7 @@ function renderPeers(peers) {
 			{
 				class: 'text-white font-bold'
 			},
-			peer.name + '-' + peer.roleName
+			`${peer.name}${peer.isLocal ? ' (You)' : ''}-${peer.roleName} `
 		);
 		const peerContainer = createElem(
 			'div',
@@ -127,3 +127,32 @@ AudioBtn.addEventListener('click', () => {
 	AudioBtn.classList.toggle('bg-red-600');
 	hmsActions.setLocalAudioEnabled(!audioEnabled);
 });
+
+// know users permissions
+// const role = hmsStore.getState(selectLocalPeerRole);
+// const permissions = hsmStore.getState(selectPermissions);
+// console.log('can I end room - ', permissions.endRoom);
+// console.log('can I end change role - ', permissions.changeRole);
+// const { video, audio, screen } = hmsStore.getState(selectIsAllowedToPublish);
+
+// change role
+// 💡 A list of all available role names in the current room can be accessed via the selectAvailableRoleNames selector.
+// Further the selectRoleByRoleName selector can be used to get the full HMSRole object for a role name.
+// hmsActions.changeRole(forPeerId, toRoleName, force);
+
+// handle role change request
+// function handleRoleChangeRequest(request) {
+// 	if (!request) {
+// 		return;
+// 	}
+// 	console.log(`${request.requestedBy.name} requested role change to - ${request.role.name}`);
+// 	// shouldAccept can for example present a pop up to the user for deciding how to act on the request
+// 	const accept = shouldAccept(request);
+// 	if (accept) {
+// 		hmsActions.acceptChangeRole(request);
+// 	} else {
+// 		hmsActions.rejectChangeRole(request);
+// 	}
+// }
+
+// hmsStore.subscribe(handleRoleChangeRequest, selectRoleChangeRequest);
