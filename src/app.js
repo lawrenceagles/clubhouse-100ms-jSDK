@@ -105,7 +105,7 @@ function renderPeers(peers) {
 		});
 
 		// create a description paragrah tag with a text
-		peerDesc = createElem(
+		const peerDesc = createElem(
 			'p',
 			{
 				class: 'text-white font-bold'
@@ -117,9 +117,12 @@ function renderPeers(peers) {
 			'li',
 			{},
 			createElem(
-				'button',
-				{ class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
-				'Mute'
+				'a',
+				{
+					href: '#',
+					class: 'rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Mute peer'
 			)
 		);
 
@@ -127,9 +130,12 @@ function renderPeers(peers) {
 			'li',
 			{},
 			createElem(
-				'button',
-				{ class: 'speaker bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
-				'Speaker'
+				'a',
+				{
+					href: '#',
+					class: 'bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Make speaker'
 			)
 		);
 
@@ -137,21 +143,24 @@ function renderPeers(peers) {
 			'li',
 			{},
 			createElem(
-				'button',
-				{ class: 'listener rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
-				'Listener'
+				'a',
+				{
+					href: '#',
+					class: 'rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Make listener'
 			)
 		);
 
 		const menu = createElem(
 			'button',
-			{ class: 'text-white font-semibold py-2 px-4 rounded inline-flex items-centerr' },
-			'Dropdown'
+			{ class: 'text-white font-bold text-3xl z-20 rounded inline-flex items-centerr' },
+			'...'
 		);
 
 		const dropdown = createElem(
 			'ul',
-			{ class: 'absolute hidden text-gray-700 pt-1 group-hover:block' },
+			{ class: 'dropdown-menu absolute top-4 right-0 hidden text-gray-700 w-max pt-1 group-hover:block z-50' },
 			MuteItem,
 			SpeakerItem,
 			ListenerItem
@@ -160,7 +169,7 @@ function renderPeers(peers) {
 		const menuContainer = createElem(
 			'div',
 			{
-				class: 'group inline-block relative'
+				class: 'dropdown inline-block absolute top-0 right-8'
 			},
 			menu,
 			dropdown
@@ -170,7 +179,7 @@ function renderPeers(peers) {
 			'div',
 			{
 				class:
-					'w-full bg-gray-900 rounded-lg sahdow-lg overflow-hidden flex flex-col justify-center items-center'
+					'relative w-full p-4 bg-gray-900 rounded-lg sahdow-lg overflow-hidden flex flex-col justify-center items-center'
 			},
 			menuContainer,
 			peerAvatar,
