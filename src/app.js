@@ -2,7 +2,9 @@ import {
 	HMSReactiveStore,
 	selectPeers,
 	selectIsConnectedToRoom,
-	selectIsLocalAudioEnabled
+	selectIsLocalAudioEnabled,
+	selectLocalPeerRole,
+	selectPermissions
 } from '@100mslive/hms-video-store';
 
 import { getToken, createElem } from '../utils';
@@ -10,6 +12,14 @@ import { getToken, createElem } from '../utils';
 const hms = new HMSReactiveStore();
 const hmsStore = hms.getStore();
 const hmsActions = hms.getHMSActions();
+
+// know users permissions
+const role = hmsStore.getState(selectLocalPeerRole);
+const permissions = hmsStore.getState(selectPermissions);
+// const { video, audio, screen } = hmsStore.getState(selectIsAllowedToPublish);
+
+console.log('role is: ', role);
+console.log('change role is:  ', permissions);
 
 // Get DOM elements
 const Form = document.querySelector('#join-form');
@@ -102,12 +112,67 @@ function renderPeers(peers) {
 			},
 			`${peer.name}${peer.isLocal ? ' (You)' : ''}-${peer.roleName} `
 		);
+
+		const MuteItem = createElem(
+			'li',
+			{},
+			createElem(
+				'button',
+				{ class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
+				'Mute'
+			)
+		);
+
+		const SpeakerItem = createElem(
+			'li',
+			{},
+			createElem(
+				'button',
+				{ class: 'speaker bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
+				'Speaker'
+			)
+		);
+
+		const ListenerItem = createElem(
+			'li',
+			{},
+			createElem(
+				'button',
+				{ class: 'listener rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block whitespace-no-wrap' },
+				'Listener'
+			)
+		);
+
+		const menu = createElem(
+			'button',
+			{ class: 'text-white font-semibold py-2 px-4 rounded inline-flex items-centerr' },
+			'Dropdown'
+		);
+
+		const dropdown = createElem(
+			'ul',
+			{ class: 'absolute hidden text-gray-700 pt-1 group-hover:block' },
+			MuteItem,
+			SpeakerItem,
+			ListenerItem
+		);
+
+		const menuContainer = createElem(
+			'div',
+			{
+				class: 'group inline-block relative'
+			},
+			menu,
+			dropdown
+		);
+
 		const peerContainer = createElem(
 			'div',
 			{
 				class:
 					'w-full bg-gray-900 rounded-lg sahdow-lg overflow-hidden flex flex-col justify-center items-center'
 			},
+			menuContainer,
 			peerAvatar,
 			peerDesc
 		);
@@ -119,7 +184,6 @@ function renderPeers(peers) {
 hmsStore.subscribe(renderPeers, selectPeers);
 
 //handle mute/unmute peer
-
 AudioBtn.addEventListener('click', () => {
 	let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
 	AudioBtn.innerText = audioEnabled ? 'Mute' : 'Unmute';
@@ -127,13 +191,6 @@ AudioBtn.addEventListener('click', () => {
 	AudioBtn.classList.toggle('bg-red-600');
 	hmsActions.setLocalAudioEnabled(!audioEnabled);
 });
-
-// know users permissions
-// const role = hmsStore.getState(selectLocalPeerRole);
-// const permissions = hsmStore.getState(selectPermissions);
-// console.log('can I end room - ', permissions.endRoom);
-// console.log('can I end change role - ', permissions.changeRole);
-// const { video, audio, screen } = hmsStore.getState(selectIsAllowedToPublish);
 
 // change role
 // 💡 A list of all available role names in the current room can be accessed via the selectAvailableRoleNames selector.
