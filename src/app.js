@@ -5,7 +5,7 @@ import {
 	selectIsLocalAudioEnabled
 } from '@100mslive/hms-video-store';
 
-import { getToken, createElem } from './utils';
+import { getToken, createElem } from '../utils';
 
 const hms = new HMSReactiveStore();
 const hmsStore = hms.getStore();
