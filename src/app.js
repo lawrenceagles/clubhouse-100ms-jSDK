@@ -186,6 +186,27 @@ function renderPeers(peers) {
 		// appends children
 		PeersContainer.append(peerContainer);
 	});
+
+	// get DOM elements
+	const mute = document.querySelector('#mute');
+	const listener = document.querySelector('#listener');
+	const speaker = document.querySelector('#speaker');
+
+	// hanadle mute/unmute
+	mute.addEventListener('click', () => {
+		let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
+		mute.firstElementChild.innerText = audioEnabled ? 'Mute peer' : 'Unmute peer';
+		hmsActions.setLocalAudioEnabled(!audioEnabled);
+	});
+
+	// handle change role
+	listener.addEventListener('click', () => {
+		console.log('changing role to listener');
+	});
+
+	speaker.addEventListener('click', () => {
+		console.log('changing role to speaker');
+	});
 }
 hmsStore.subscribe(renderPeers, selectPeers);
 
