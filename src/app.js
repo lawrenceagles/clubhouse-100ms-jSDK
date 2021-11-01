@@ -13,14 +13,6 @@ const hms = new HMSReactiveStore();
 const hmsStore = hms.getStore();
 const hmsActions = hms.getHMSActions();
 
-// know users permissions
-const role = hmsStore.getState(selectLocalPeerRole);
-const permissions = hmsStore.getState(selectPermissions);
-// const { video, audio, screen } = hmsStore.getState(selectIsAllowedToPublish);
-
-console.log('role is: ', role);
-console.log('change role is:  ', permissions);
-
 // Get DOM elements
 const Form = document.querySelector('#join-form');
 const FormView = document.querySelector('#join-section');
@@ -163,14 +155,17 @@ function renderPeers(peers) {
 			ListenerItem
 		);
 
-		const menuContainer = createElem(
-			'div',
-			{
-				class: 'dropdown inline-block absolute top-0 right-8'
-			},
-			menu,
-			dropdown
-		);
+		const menuContainer =
+			peer.roleName === 'moderator'
+				? createElem(
+						'div',
+						{
+							class: 'dropdown inline-block absolute top-0 right-8'
+						},
+						menu,
+						dropdown
+					)
+				: null;
 
 		const peerContainer = createElem(
 			'div',
@@ -193,20 +188,42 @@ function renderPeers(peers) {
 	const speaker = document.querySelector('#speaker');
 
 	// hanadle mute/unmute
-	mute.addEventListener('click', () => {
-		let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
-		mute.firstElementChild.innerText = audioEnabled ? 'Mute peer' : 'Unmute peer';
-		hmsActions.setLocalAudioEnabled(!audioEnabled);
-	});
+	if (mute) {
+		mute.addEventListener('click', () => {
+			// know user permissions
+			const role = hmsStore.getState(selectLocalPeerRole);
+			if (!role.permissions.mute) return;
+
+			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
+			mute.firstElementChild.innerText = audioEnabled ? 'Mute peer' : 'Unmute peer';
+			hmsActions.setLocalAudioEnabled(!audioEnabled);
+		});
+	}
 
 	// handle change role
-	listener.addEventListener('click', () => {
-		console.log('changing role to listener');
-	});
+	if (listener) {
+		listener.addEventListener('click', () => {
+			// know users permissions
+			const role = hmsStore.getState(selectLocalPeerRole);
+			if (!role.permissions.changeRole) return;
 
-	speaker.addEventListener('click', () => {
-		console.log('changing role to speaker');
-	});
+			hmsActions.changeRole(peer.id, 'listener', force);
+
+			console.log('role is: ', role);
+		});
+	}
+
+	if (speaker) {
+		speaker.addEventListener('click', () => {
+			// know users permissions
+			const role = hmsStore.getState(selectLocalPeerRole);
+			if (!role.permissions.changeRole) return;
+
+			hmsActions.changeRole(peer.id, 'speaker', force);
+
+			console.log('role is: ', role);
+		});
+	}
 }
 hmsStore.subscribe(renderPeers, selectPeers);
 
