@@ -9,9 +9,9 @@ import {
 import { getToken, createElem } from '../utils';
 
 const hms = new HMSReactiveStore();
-console.log('hms', hms);
 const hmsStore = hms.getStore();
 const hmsActions = hms.getHMSActions();
+let peer;
 
 // Get DOM elements
 const Form = document.querySelector('#join-form');
@@ -23,7 +23,6 @@ const AudioBtn = document.querySelector('#audio-btn');
 const JoinBtn = document.querySelector('#join-btn');
 
 // handle submit form
-
 Form.addEventListener('submit', async function handleSubmit(e) {
 	// prevents form reload
 	e.preventDefault();
@@ -88,6 +87,7 @@ function renderPeers(peers) {
 		// this allows us to make peer list an optional argument
 		peers = hmsStore.getState(selectPeers);
 	}
+	peer = peers.find((peer) => peer.isLocal === true);
 	peers.forEach((peer) => {
 		// creates an image tag
 		const peerAvatar = createElem('img', {
@@ -111,7 +111,8 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					class: 'rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+					id: peer.id,
+					class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Unmute'
 			)
@@ -123,7 +124,8 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					class: 'bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+					id: peer.id,
+					class: 'speaker bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make speaker'
 			)
@@ -135,7 +137,8 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					class: 'rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+					id: peer.id,
+					class: 'listener rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make listener'
 			)
@@ -178,62 +181,9 @@ function renderPeers(peers) {
 		// appends children
 		PeersContainer.append(peerContainer);
 	});
-
-	// get DOM elements
-	const mute = document.querySelector('#mute');
-	const listener = document.querySelector('#listener');
-	const speaker = document.querySelector('#speaker');
-
-	// hanadle mute/unmute
-	if (mute) {
-		mute.addEventListener('click', () => {
-			// know user permissions
-			const role = hmsStore.getState(selectLocalPeerRole);
-			// if (!role.permissions.mute) {
-			// 	alert('You do not have the permission to mute a peer!');
-			// 	return;
-			// }
-
-			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
-			mute.firstElementChild.innerText = audioEnabled ? 'Unmute' : 'Mute';
-			hmsActions.setLocalAudioEnabled(!audioEnabled);
-		});
-	}
-
-	// handle change role
-	if (listener) {
-		listener.addEventListener('click', () => {
-			// know users permissions
-			const role = hmsStore.getState(selectLocalPeerRole);
-			// if (!role.permissions.changeRole) {
-			// 	alert('You do not have the permission to change role!');
-			// 	return;
-			// }
-
-			hmsActions.changeRole(peer.id, 'listener', force);
-
-			console.log('role is: ', role);
-		});
-	}
-
-	if (speaker) {
-		speaker.addEventListener('click', () => {
-			// know users permissions
-			const role = hmsStore.getState(selectLocalPeerRole);
-			// if (!role.permissions.changeRole) {
-			// 	alert('You do not have the permission to change role!');
-			// 	return;
-			// }
-
-			hmsActions.changeRole(peer.id, 'speaker', force);
-
-			console.log('role is: ', role);
-		});
-	}
 }
 hmsStore.subscribe(renderPeers, selectPeers);
 
-//handle mute/unmute peer
 AudioBtn.addEventListener('click', () => {
 	let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
 	AudioBtn.innerText = audioEnabled ? 'Mute' : 'Unmute';
@@ -242,24 +192,45 @@ AudioBtn.addEventListener('click', () => {
 	hmsActions.setLocalAudioEnabled(!audioEnabled);
 });
 
-// change role
-// 💡 A list of all available role names in the current room can be accessed via the selectAvailableRoleNames selector.
-// Further the selectRoleByRoleName selector can be used to get the full HMSRole object for a role name.
-// hmsActions.changeRole(forPeerId, toRoleName, force);
+document.addEventListener(
+	'click',
+	function(event) {
+		const role = hmsStore.getState(selectLocalPeerRole);
+		if (event.target.matches('.mute')) {
+			console.log('target', event);
+			// hanadle mute/unmute
+			if (role.name === 'listener') {
+				alert('You do not have the permission to mute/unmute!');
+				return;
+			}
 
-// handle role change request
-// function handleRoleChangeRequest(request) {
-// 	if (!request) {
-// 		return;
-// 	}
-// 	console.log(`${request.requestedBy.name} requested role change to - ${request.role.name}`);
-// 	// shouldAccept can for example present a pop up to the user for deciding how to act on the request
-// 	const accept = shouldAccept(request);
-// 	if (accept) {
-// 		hmsActions.acceptChangeRole(request);
-// 	} else {
-// 		hmsActions.rejectChangeRole(request);
-// 	}
-// }
+			// if (peer.roleName === 'speaker' && !peer.isLocal) {
+			// 	alert('You cannot mute/unmute other peers!');
+			// 	return;
+			// }
 
-// hmsStore.subscribe(handleRoleChangeRequest, selectRoleChangeRequest);
+			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
+			event.target.innerText = audioEnabled ? 'Unmute' : 'Mute';
+			hmsActions.setLocalAudioEnabled(!audioEnabled);
+		}
+
+		if (event.target.matches('.speaker')) {
+			if (!role.permissions.changeRole) {
+				alert('You do not have the permission to change role!');
+				return;
+			}
+
+			hmsActions.changeRole(event.target.id, 'speaker', true);
+		}
+
+		if (event.target.matches('.listener')) {
+			if (!role.permissions.changeRole) {
+				alert('You do not have the permission to change role!');
+				return;
+			}
+
+			hmsActions.changeRole(event.target.id, 'listener', true);
+		}
+	},
+	false
+);
