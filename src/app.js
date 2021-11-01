@@ -115,11 +115,10 @@ function renderPeers(peers) {
 
 		const MuteItem = createElem(
 			'li',
-			{},
+			{ id: 'mute', class: 'cursor-pointer' },
 			createElem(
-				'a',
+				'span',
 				{
-					href: '#',
 					class: 'rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Mute peer'
@@ -128,11 +127,10 @@ function renderPeers(peers) {
 
 		const SpeakerItem = createElem(
 			'li',
-			{},
+			{ id: 'speaker', class: 'cursor-pointer' },
 			createElem(
-				'a',
+				'span',
 				{
-					href: '#',
 					class: 'bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make speaker'
@@ -141,11 +139,10 @@ function renderPeers(peers) {
 
 		const ListenerItem = createElem(
 			'li',
-			{},
+			{ id: 'listener', class: 'cursor-pointer' },
 			createElem(
-				'a',
+				'span',
 				{
-					href: '#',
 					class: 'rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make listener'
