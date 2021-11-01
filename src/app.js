@@ -3,13 +3,13 @@ import {
 	selectPeers,
 	selectIsConnectedToRoom,
 	selectIsLocalAudioEnabled,
-	selectLocalPeerRole,
-	selectPermissions
+	selectLocalPeerRole
 } from '@100mslive/hms-video-store';
 
 import { getToken, createElem } from '../utils';
 
 const hms = new HMSReactiveStore();
+console.log('hms', hms);
 const hmsStore = hms.getStore();
 const hmsActions = hms.getHMSActions();
 
@@ -113,7 +113,7 @@ function renderPeers(peers) {
 				{
 					class: 'rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
-				'Mute peer'
+				'Unmute'
 			)
 		);
 
@@ -155,17 +155,14 @@ function renderPeers(peers) {
 			ListenerItem
 		);
 
-		const menuContainer =
-			peer.roleName === 'moderator'
-				? createElem(
-						'div',
-						{
-							class: 'dropdown inline-block absolute top-0 right-8'
-						},
-						menu,
-						dropdown
-					)
-				: null;
+		const menuContainer = createElem(
+			'div',
+			{
+				class: `dropdown inline-block absolute top-0 right-8`
+			},
+			menu,
+			dropdown
+		);
 
 		const peerContainer = createElem(
 			'div',
@@ -192,10 +189,13 @@ function renderPeers(peers) {
 		mute.addEventListener('click', () => {
 			// know user permissions
 			const role = hmsStore.getState(selectLocalPeerRole);
-			if (!role.permissions.mute) return;
+			// if (!role.permissions.mute) {
+			// 	alert('You do not have the permission to mute a peer!');
+			// 	return;
+			// }
 
 			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
-			mute.firstElementChild.innerText = audioEnabled ? 'Mute peer' : 'Unmute peer';
+			mute.firstElementChild.innerText = audioEnabled ? 'Unmute' : 'Mute';
 			hmsActions.setLocalAudioEnabled(!audioEnabled);
 		});
 	}
@@ -205,7 +205,10 @@ function renderPeers(peers) {
 		listener.addEventListener('click', () => {
 			// know users permissions
 			const role = hmsStore.getState(selectLocalPeerRole);
-			if (!role.permissions.changeRole) return;
+			// if (!role.permissions.changeRole) {
+			// 	alert('You do not have the permission to change role!');
+			// 	return;
+			// }
 
 			hmsActions.changeRole(peer.id, 'listener', force);
 
@@ -217,7 +220,10 @@ function renderPeers(peers) {
 		speaker.addEventListener('click', () => {
 			// know users permissions
 			const role = hmsStore.getState(selectLocalPeerRole);
-			if (!role.permissions.changeRole) return;
+			// if (!role.permissions.changeRole) {
+			// 	alert('You do not have the permission to change role!');
+			// 	return;
+			// }
 
 			hmsActions.changeRole(peer.id, 'speaker', force);
 
