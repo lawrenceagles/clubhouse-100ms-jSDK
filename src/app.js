@@ -11,7 +11,6 @@ import { getToken, createElem } from '../utils';
 const hms = new HMSReactiveStore();
 const hmsStore = hms.getStore();
 const hmsActions = hms.getHMSActions();
-let peer;
 
 // Get DOM elements
 const Form = document.querySelector('#join-form');
@@ -71,7 +70,6 @@ function handleConnection(isConnected) {
 hmsStore.subscribe(handleConnection, selectIsConnectedToRoom);
 
 // leave room
-
 function leaveRoom() {
 	hmsActions.leave();
 	JoinBtn.innerHTML = 'Join';
@@ -80,14 +78,13 @@ LeaveRoomBtn.addEventListener('click', leaveRoom);
 window.onunload = leaveRoom;
 
 // display room
-
 function renderPeers(peers) {
 	PeersContainer.innerHTML = ''; // clears the container
 	if (!peers) {
 		// this allows us to make peer list an optional argument
 		peers = hmsStore.getState(selectPeers);
 	}
-	peer = peers.find((peer) => peer.isLocal === true);
+
 	peers.forEach((peer) => {
 		// creates an image tag
 		const peerAvatar = createElem('img', {
@@ -111,7 +108,8 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					id: peer.id,
+					'data-id': peer.id,
+					'data-islocal': peer.isLocal,
 					class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Unmute'
@@ -184,7 +182,14 @@ function renderPeers(peers) {
 }
 hmsStore.subscribe(renderPeers, selectPeers);
 
+// mute/unmute feature
 AudioBtn.addEventListener('click', () => {
+	const role = hmsStore.getState(selectLocalPeerRole);
+	if (role.name === 'listener') {
+		alert('You do not have the permission to mute/unmute!');
+		return;
+	}
+
 	let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
 	AudioBtn.innerText = audioEnabled ? 'Mute' : 'Unmute';
 	AudioBtn.classList.toggle('bg-green-600');
@@ -192,22 +197,23 @@ AudioBtn.addEventListener('click', () => {
 	hmsActions.setLocalAudioEnabled(!audioEnabled);
 });
 
+// handle change role and mute/unmuter other peers
 document.addEventListener(
 	'click',
 	function(event) {
 		const role = hmsStore.getState(selectLocalPeerRole);
+
 		if (event.target.matches('.mute')) {
-			console.log('target', event);
 			// hanadle mute/unmute
 			if (role.name === 'listener') {
 				alert('You do not have the permission to mute/unmute!');
 				return;
 			}
 
-			// if (peer.roleName === 'speaker' && !peer.isLocal) {
-			// 	alert('You cannot mute/unmute other peers!');
-			// 	return;
-			// }
+			if (role.name === 'speaker' && JSON.parse(event.target.dataset.islocal) === false) {
+				alert('You do not have the permission to mute/unmute other peers!');
+				return;
+			}
 
 			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
 			event.target.innerText = audioEnabled ? 'Unmute' : 'Mute';
