@@ -9,4 +9,4 @@ clubhouse-100ms is a clubhouse clone built with vanilla JavaScript, Tailwind CSS
 
 ### Demo
 
-![100ms Demo](https://user-images.githubusercontent.com/9684204/139900334-c62917d6-8e80-4236-aaad-494627e5e807.gif)
+![100ms Demo](https://user-images.githubusercontent.com/9684204/139946414-b4e73e3a-0efc-4c35-9c5b-49b9bfccb462.gif).gif)
