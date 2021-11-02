@@ -102,6 +102,7 @@ function renderPeers(peers) {
 			`${peer.name}${peer.isLocal ? ' (You)' : ''}-${peer.roleName} `
 		);
 
+		// add mute/unmute list items
 		const MuteItem = createElem(
 			'li',
 			{ id: 'mute', class: 'cursor-pointer' },
@@ -112,7 +113,7 @@ function renderPeers(peers) {
 					'data-islocal': peer.isLocal,
 					class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
-				'Unmutes'
+				'Unmute'
 			)
 		);
 
