@@ -2,10 +2,11 @@ import {
 	HMSReactiveStore,
 	selectPeers,
 	selectIsConnectedToRoom,
-	selectIsLocalAudioEnabled
+	selectIsLocalAudioEnabled,
+	selectLocalPeerRole
 } from '@100mslive/hms-video-store';
 
-import { getToken, createElem } from './utils';
+import { getToken, createElem } from '../utils';
 
 const hms = new HMSReactiveStore();
 const hmsStore = hms.getStore();
@@ -21,7 +22,6 @@ const AudioBtn = document.querySelector('#audio-btn');
 const JoinBtn = document.querySelector('#join-btn');
 
 // handle submit form
-
 Form.addEventListener('submit', async function handleSubmit(e) {
 	// prevents form reload
 	e.preventDefault();
@@ -70,7 +70,6 @@ function handleConnection(isConnected) {
 hmsStore.subscribe(handleConnection, selectIsConnectedToRoom);
 
 // leave room
-
 function leaveRoom() {
 	hmsActions.leave();
 	JoinBtn.innerHTML = 'Join';
@@ -79,13 +78,13 @@ LeaveRoomBtn.addEventListener('click', leaveRoom);
 window.onunload = leaveRoom;
 
 // display room
-
 function renderPeers(peers) {
 	PeersContainer.innerHTML = ''; // clears the container
 	if (!peers) {
 		// this allows us to make peer list an optional argument
 		peers = hmsStore.getState(selectPeers);
 	}
+
 	peers.forEach((peer) => {
 		// creates an image tag
 		const peerAvatar = createElem('img', {
@@ -95,19 +94,85 @@ function renderPeers(peers) {
 		});
 
 		// create a description paragrah tag with a text
-		peerDesc = createElem(
+		const peerDesc = createElem(
 			'p',
 			{
 				class: 'text-white font-bold'
 			},
-			peer.name + '-' + peer.roleName
+			`${peer.name}${peer.isLocal ? ' (You)' : ''}-${peer.roleName} `
 		);
+
+		// add mute/unmute list items
+		const MuteItem = createElem(
+			'li',
+			{ id: 'mute', class: 'cursor-pointer' },
+			createElem(
+				'span',
+				{
+					'data-id': peer.id,
+					'data-islocal': peer.isLocal,
+					class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Unmute'
+			)
+		);
+
+		const SpeakerItem = createElem(
+			'li',
+			{ id: 'speaker', class: 'cursor-pointer' },
+			createElem(
+				'span',
+				{
+					'data-id': peer.id,
+					class: 'speaker bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Make speaker'
+			)
+		);
+
+		const ListenerItem = createElem(
+			'li',
+			{ id: 'listener', class: 'cursor-pointer' },
+			createElem(
+				'span',
+				{
+					'data-id': peer.id,
+					class: 'listener rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
+				},
+				'Make listener'
+			)
+		);
+
+		const menu = createElem(
+			'button',
+			{ class: 'text-white font-bold text-3xl z-20 rounded inline-flex items-center' },
+			'...'
+		);
+
+		const dropdown = createElem(
+			'ul',
+			{ class: 'dropdown-menu absolute top-4 right-0 hidden text-gray-700 w-max pt-1 group-hover:block z-50' },
+			MuteItem,
+			SpeakerItem,
+			ListenerItem
+		);
+
+		const menuContainer = createElem(
+			'div',
+			{
+				class: `dropdown inline-block absolute top-0 right-8`
+			},
+			menu,
+			dropdown
+		);
+
 		const peerContainer = createElem(
 			'div',
 			{
 				class:
-					'w-full bg-gray-900 rounded-lg sahdow-lg overflow-hidden flex flex-col justify-center items-center'
+					'relative w-full p-4 bg-gray-900 rounded-lg sahdow-lg overflow-hidden flex flex-col justify-center items-center'
 			},
+			menuContainer,
 			peerAvatar,
 			peerDesc
 		);
@@ -118,12 +183,61 @@ function renderPeers(peers) {
 }
 hmsStore.subscribe(renderPeers, selectPeers);
 
-//handle mute/unmute peer
-
+// mute/unmute feature
 AudioBtn.addEventListener('click', () => {
-	let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
+	const role = hmsStore.getState(selectLocalPeerRole);
+	if (role.name === 'listener') {
+		alert('You do not have the permission to mute/unmute!');
+		return;
+	}
+
+	let audioEnabled = !hmsStore.getState(selectIsLocalAudioEnabled);
 	AudioBtn.innerText = audioEnabled ? 'Mute' : 'Unmute';
 	AudioBtn.classList.toggle('bg-green-600');
 	AudioBtn.classList.toggle('bg-red-600');
-	hmsActions.setLocalAudioEnabled(!audioEnabled);
+	hmsActions.setLocalAudioEnabled(audioEnabled);
 });
+
+// handle change role and mute/unmuter other peers
+document.addEventListener(
+	'click',
+	function(event) {
+		const role = hmsStore.getState(selectLocalPeerRole);
+
+		if (event.target.matches('.mute')) {
+			// hanadle mute/unmute
+			if (role.name === 'listener') {
+				alert('You do not have the permission to mute/unmute!');
+				return;
+			}
+
+			if (role.name === 'speaker' && JSON.parse(event.target.dataset.islocal) === false) {
+				alert('You do not have the permission to mute/unmute other peers!');
+				return;
+			}
+
+			let audioEnabled = !hmsStore.getState(selectIsLocalAudioEnabled);
+			hmsActions.setLocalAudioEnabled(audioEnabled);
+			event.target.innerText = audioEnabled ? 'Mute' : 'unmute';
+		}
+
+		if (event.target.matches('.speaker')) {
+			if (!role.permissions.changeRole) {
+				alert('You do not have the permission to change role!');
+				return;
+			}
+
+			hmsActions.changeRole(event.target.dataset.id, 'speaker', true);
+		}
+
+		if (event.target.matches('.listener')) {
+			if (!role.permissions.changeRole) {
+				alert('You do not have the permission to change role!');
+				return;
+			}
+
+			hmsActions.changeRole(event.target.dataset.id, 'listener', true);
+		}
+	},
+	false
+);

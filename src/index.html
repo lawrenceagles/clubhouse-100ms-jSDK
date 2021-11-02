@@ -7,6 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Add tailwind css link -->
     <link href="/tailwind.css" rel="stylesheet">
+    <style>
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+    </style>
     <title>100ms Clubhouse</title>
     <script type="module" src="app.js"></script>
 </head>
@@ -76,7 +81,7 @@
             <div class="w-full flex justify-center h-18">
                 <button id="audio-btn" class="mt-3 text-white rounded-lg mx-2 px-6 py-2 block 
                         shadow-xl hover:text-white bg-green-600">
-                    Mute
+                    Unmute
                 </button>
                 <button id="leave-room-btn" class="mt-3 text-white rounded-lg mx-2 px-6 py-2 block 
                         shadow-xl hover:text-white bg-red-600 hover:bg-red-800">
