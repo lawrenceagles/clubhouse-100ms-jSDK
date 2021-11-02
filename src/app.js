@@ -112,7 +112,7 @@ function renderPeers(peers) {
 					'data-islocal': peer.isLocal,
 					class: 'mute rounded-t bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
-				'Unmute'
+				'Unmutes'
 			)
 		);
 
@@ -190,11 +190,11 @@ AudioBtn.addEventListener('click', () => {
 		return;
 	}
 
-	let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
+	let audioEnabled = !hmsStore.getState(selectIsLocalAudioEnabled);
 	AudioBtn.innerText = audioEnabled ? 'Mute' : 'Unmute';
 	AudioBtn.classList.toggle('bg-green-600');
 	AudioBtn.classList.toggle('bg-red-600');
-	hmsActions.setLocalAudioEnabled(!audioEnabled);
+	hmsActions.setLocalAudioEnabled(audioEnabled);
 });
 
 // handle change role and mute/unmuter other peers
@@ -202,7 +202,6 @@ document.addEventListener(
 	'click',
 	function(event) {
 		const role = hmsStore.getState(selectLocalPeerRole);
-		console.log('peer is', event.target.dataset.id);
 
 		if (event.target.matches('.mute')) {
 			// hanadle mute/unmute
@@ -216,9 +215,9 @@ document.addEventListener(
 				return;
 			}
 
-			let audioEnabled = hmsStore.getState(selectIsLocalAudioEnabled);
-			event.target.innerText = audioEnabled ? 'Unmute' : 'Mute';
-			hmsActions.setLocalAudioEnabled(!audioEnabled);
+			let audioEnabled = !hmsStore.getState(selectIsLocalAudioEnabled);
+			hmsActions.setLocalAudioEnabled(audioEnabled);
+			event.target.innerText = audioEnabled ? 'Mute' : 'unmute';
 		}
 
 		if (event.target.matches('.speaker')) {
