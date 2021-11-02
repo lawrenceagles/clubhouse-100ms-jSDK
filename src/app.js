@@ -122,7 +122,7 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					id: peer.id,
+					'data-id': peer.id,
 					class: 'speaker bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make speaker'
@@ -135,7 +135,7 @@ function renderPeers(peers) {
 			createElem(
 				'span',
 				{
-					id: peer.id,
+					'data-id': peer.id,
 					class: 'listener rounded-b bg-gray-200 hover:bg-gray-400 py-2 px-4 block'
 				},
 				'Make listener'
@@ -144,7 +144,7 @@ function renderPeers(peers) {
 
 		const menu = createElem(
 			'button',
-			{ class: 'text-white font-bold text-3xl z-20 rounded inline-flex items-centerr' },
+			{ class: 'text-white font-bold text-3xl z-20 rounded inline-flex items-center' },
 			'...'
 		);
 
@@ -202,6 +202,7 @@ document.addEventListener(
 	'click',
 	function(event) {
 		const role = hmsStore.getState(selectLocalPeerRole);
+		console.log('peer is', event.target.dataset.id);
 
 		if (event.target.matches('.mute')) {
 			// hanadle mute/unmute
@@ -226,7 +227,7 @@ document.addEventListener(
 				return;
 			}
 
-			hmsActions.changeRole(event.target.id, 'speaker', true);
+			hmsActions.changeRole(event.target.dataset.id, 'speaker', true);
 		}
 
 		if (event.target.matches('.listener')) {
@@ -235,7 +236,7 @@ document.addEventListener(
 				return;
 			}
 
-			hmsActions.changeRole(event.target.id, 'listener', true);
+			hmsActions.changeRole(event.target.dataset.id, 'listener', true);
 		}
 	},
 	false
